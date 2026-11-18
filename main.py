@@ -3,32 +3,64 @@ import tomllib
 from getpass import getpass
 import requests
 
-# Config location with server details and IP.
+
+# --- Settings ---
+# Cube's settings live outside the project, so the server address
+# and username are never uploaded to GitHub.
 config_path = Path.home() / ".config/cube/config.toml"
 
 with open(config_path, "rb") as f:
     config = tomllib.load(f)
 
-
-# Global Variables
+amp_url = config["amp"]["url"]
 username = config["amp"]["username"]
-url = config["amp"]["url"]
+
+# Asked for each time and never saved, so it only ever lives in memory.
 password = getpass("AMP Password: ")
 
-# Dictionaries
-login_data = {
+# AMP answers in JSON when asked to. Every request uses these headers.
+headers = {"Accept": "application/json"}
+
+
+# --- Log in ---
+# Same login as the web panel. "token" is for two-factor codes (not used).
+login_payload = {
     "username": username,
     "password": password,
     "token": "",
-    "rememberMe": False
+    "rememberMe": False,
 }
 
-header = {"Accept": "application/json"}
+login_response = requests.post(amp_url + "/API/Core/Login", json=login_payload, headers=headers)
+login_result = login_response.json()
 
-response = requests.post(url + "/API/Core/Login", json=login_data, headers=header)
-data = response.json()
+# Stop here if the login failed, so nothing below runs without a session.
+if not login_result["success"]:
+    print("Login failed")
+    exit()
 
-if data["success"]:
-    print("Welcome to Cube")
-else:
-    print("Incorrect Password")
+print("Welcome to Cube")
+
+# The session ID proves we're logged in. Every request from now on sends it.
+session_id = login_result["sessionID"]
+
+
+# --- Servers ---
+# Ask AMP's controller (ADS) for every instance it manages.
+instances_payload = {"SESSIONID": session_id}
+
+instances_response = requests.post(amp_url + "/API/ADSModule/GetInstances", json=instances_payload, headers=headers)
+instances_result = instances_response.json()
+
+# Selecting the list with the location of the games.
+instances = instances_result[0]["AvailableInstances"]
+
+# For logic Listing out the games.
+for game in instances:
+    if game['Module'] != "ADS":
+        if game["AppState"] == 20:
+            print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  Running")
+        elif game["AppState"] == 100:
+            print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  Offline")
+        elif game["AppState"] == 50:
+            print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  Sleeping")
