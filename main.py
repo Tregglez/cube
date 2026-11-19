@@ -81,6 +81,29 @@ for number, game in enumerate(servers, start=1):
     print(f"{number}. {game['FriendlyName']}  |  Server Type: {game['Module']}  |  {app_state}  |  {players_online}/{player_limit}")
     print("")
 
-server_selection = input("Pick a server: ")
 
-print(servers[int(server_selection) - 1]["FriendlyName"])
+while True:
+    server_selection = input("Pick a server: ")
+    
+    if not server_selection.isdigit() or not 1 <= int(server_selection) <= len(servers):
+        print("Sorry, that choice isn't an option. Please choose from the list above.")
+        continue
+
+    # try:
+    #     server_to_int = int(server_selection)
+
+    # except ValueError:
+    #     print("Please select an option from the list above.")
+    #     continue
+    
+    # if not 1 <= server_to_int <= len(servers):
+    #     print("Sorry, this isn't an option, please choose an option from the list above.")
+    #     continue
+
+    chosen_server = servers[int(server_selection) - 1]
+    
+    break
+
+print(chosen_server["FriendlyName"])
+
+# Next: Options for the chosen server.
