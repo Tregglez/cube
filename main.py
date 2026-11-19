@@ -55,12 +55,18 @@ instances_result = instances_response.json()
 # Selecting the list with the location of the games.
 instances = instances_result[0]["AvailableInstances"]
 
+appstate_number = {
+    20: "Running",
+    100: "Offline",
+    50: "Sleeping"
+}
+
 # For logic Listing out the games.
 for game in instances:
     if game['Module'] != "ADS":
-        if game["AppState"] == 20:
-            print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  Running")
-        elif game["AppState"] == 100:
-            print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  Offline")
-        elif game["AppState"] == 50:
-            print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  Sleeping")
+        app_state = appstate_number.get(game["AppState"], "Unknown")
+        
+        players_online = game["Metrics"]["Active Users"]["RawValue"]
+        player_limit =  game["Metrics"]["Active Users"]["MaxValue"]
+        
+        print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  {app_state}  |  {players_online}/{player_limit}")
