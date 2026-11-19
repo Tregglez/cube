@@ -79,4 +79,8 @@ for number, game in enumerate(servers, start=1):
 
     # The display of all the servers.
     print(f"{number}. {game['FriendlyName']}  |  Server Type: {game['Module']}  |  {app_state}  |  {players_online}/{player_limit}")
+    print("")
 
+server_selection = input("Pick a server: ")
+
+print(servers[int(server_selection) - 1]["FriendlyName"])
