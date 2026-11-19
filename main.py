@@ -61,12 +61,22 @@ appstate_number = {
     50: "Sleeping"
 }
 
+servers = []
+
 # For logic Listing out the games.
 for game in instances:
     if game['Module'] != "ADS":
-        app_state = appstate_number.get(game["AppState"], "Unknown")
-        
-        players_online = game["Metrics"]["Active Users"]["RawValue"]
-        player_limit =  game["Metrics"]["Active Users"]["MaxValue"]
-        
-        print(f"{game['FriendlyName']}  |  Server Type: {game['Module']}  |  {app_state}  |  {players_online}/{player_limit}")
+        # Takes an empty list and adds a game to the list.
+        servers.append(game)
+
+
+for number, game in enumerate(servers, start=1):
+    app_state = appstate_number.get(game["AppState"], "Unknown")
+
+    # Number of players is displayed in these variables.
+    players_online = game["Metrics"]["Active Users"]["RawValue"]
+    player_limit =  game["Metrics"]["Active Users"]["MaxValue"]
+
+    # The display of all the servers.
+    print(f"{number}. {game['FriendlyName']}  |  Server Type: {game['Module']}  |  {app_state}  |  {players_online}/{player_limit}")
+
